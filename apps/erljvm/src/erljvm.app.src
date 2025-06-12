@@ -1,0 +1,14 @@
+{application, erljvm, [
+    {description, "Erlang Java Virtual Machine"},
+    {vsn, "0.1.0"},
+    {registered, []},
+    {mod, {erljvm_app, []}},
+    {applications, [
+        kernel,
+        stdlib
+    ]},
+    {env, []},
+    {modules, []},
+    {licenses, []},
+    {links, []}
+]}.
