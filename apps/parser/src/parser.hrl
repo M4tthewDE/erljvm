@@ -1,2 +1,5 @@
 -record(class_file, {magic, minor_version, major_version, constant_pool}).
--record(method_ref, {class_index, name_and_type_index}).
+-record(method_ref_pool_item, {class_index, name_and_type_index}).
+-record(class_pool_item, {name_index}).
+-record(name_and_type_pool_item, {name_index, descriptor_index}).
+-record(utf8_pool_item, {bytes}).

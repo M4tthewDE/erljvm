@@ -23,9 +23,21 @@ constant_pool(Count, Data) when Count > 0 ->
 
 constant_pool_item(<<Tag:8, Rest/binary>>) ->
     case Tag of
-        10 -> method_ref(Rest);
+        1 -> utf8_pool_item(Rest);
+        7 -> class_pool_item(Rest);
+        10 -> method_ref_pool_item(Rest);
+        12 -> name_and_type_pool_item(Rest);
         true -> exit(unknown_constantpool_tag)
     end.
 
-method_ref(<<ClassIndex:16, NameAndTypeIndex:16, _/binary>>) ->
-    {#method_ref{class_index = ClassIndex, name_and_type_index = NameAndTypeIndex}, 5}.
+method_ref_pool_item(<<ClassIndex:16, NameAndTypeIndex:16, _/binary>>) ->
+    {#method_ref_pool_item{class_index = ClassIndex, name_and_type_index = NameAndTypeIndex}, 5}.
+
+class_pool_item(<<NameIndex:16, _/binary>>) ->
+    {#class_pool_item{name_index = NameIndex}, 3}.
+
+name_and_type_pool_item(<<NameIndex:16, DescriptorIndex:16, _/binary>>) ->
+    {#name_and_type_pool_item{name_index = NameIndex, descriptor_index = DescriptorIndex}, 5}.
+
+utf8_pool_item(<<Length:16, Rest/binary>>) ->
+    {#utf8_pool_item{bytes = binary_part(Rest, 0, Length)}, Length + 3}.
