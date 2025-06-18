@@ -1,5 +1,7 @@
 -module(parser_SUITE).
 -export([all/0, parse_system_class/1]).
+-include_lib("eunit/include/eunit.hrl").
+-include("parser.hrl").
 
 all() ->
     [parse_system_class].
@@ -12,4 +14,8 @@ parse_system_class(Config) ->
             {error, Reason} -> ct:fail("Failed reading System.class: ~p", [Reason])
         end,
 
-    parser:parse(Data).
+    ClassFile = parser:parse(Data),
+    ?assertEqual(16#CAFEBABE, ClassFile#class_file.magic),
+    ?assertEqual(0, ClassFile#class_file.minor_version),
+    ?assertEqual(61, ClassFile#class_file.major_version),
+    ?assertEqual(802, length(ClassFile#class_file.constant_pool)).

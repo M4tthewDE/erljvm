@@ -1,0 +1,2 @@
+-record(class_file, {magic, minor_version, major_version, constant_pool}).
+-record(method_ref, {class_index, name_and_type_index}).
