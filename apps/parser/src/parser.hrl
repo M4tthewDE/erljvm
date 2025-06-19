@@ -3,3 +3,10 @@
 -record(class_pool_item, {name_index}).
 -record(name_and_type_pool_item, {name_index, descriptor_index}).
 -record(utf8_pool_item, {bytes}).
+-record(field_ref_pool_item, {class_index, name_and_type_index}).
+-record(interface_method_ref_pool_item, {class_index, name_and_type_index}).
+-record(string_pool_item, {string_index}).
+-record(invoke_dynamic_pool_item, {bootstrap_method_attr_index, name_and_type_index}).
+-record(integer_pool_item, {bytes}).
+-record(method_handle_pool_item, {reference_kind, reference_index}).
+-record(method_type_pool_item, {descriptor_index}).
