@@ -4,8 +4,8 @@
 
 -export([parse/1]).
 
-parse(<<Magic:32, MinorVersion:16, MajorVersion:16, ConstantPoolCount:16, Rest/binary>>) ->
-    ConstantPool = constant_pool(ConstantPoolCount, Rest),
+parse(<<Magic:32, MinorVersion:16, MajorVersion:16, ConstantPoolCount:16, Data/binary>>) ->
+    ConstantPool = constant_pool(ConstantPoolCount, Data),
     #class_file{
         magic = Magic,
         minor_version = MinorVersion,
@@ -16,9 +16,7 @@ parse(<<Magic:32, MinorVersion:16, MajorVersion:16, ConstantPoolCount:16, Rest/b
 constant_pool(0, _) ->
     [];
 constant_pool(Count, Data) when Count > 0 ->
-    {Item, Size} = constant_pool_item(Data),
-    io:format("item: ~p, size: ~p~n", [Item, Size]),
-    RemainingData = binary_part(Data, Size, byte_size(Data) - Size),
+    {Item, RemainingData} = constant_pool_item(Data),
     [Item | constant_pool(Count - 1, RemainingData)].
 
 constant_pool_item(<<Tag:8, Rest/binary>>) ->
@@ -30,14 +28,17 @@ constant_pool_item(<<Tag:8, Rest/binary>>) ->
         true -> exit(unknown_constantpool_tag)
     end.
 
-method_ref_pool_item(<<ClassIndex:16, NameAndTypeIndex:16, _/binary>>) ->
-    {#method_ref_pool_item{class_index = ClassIndex, name_and_type_index = NameAndTypeIndex}, 5}.
+method_ref_pool_item(<<ClassIndex:16, NameAndTypeIndex:16, Data/binary>>) ->
+    {#method_ref_pool_item{class_index = ClassIndex, name_and_type_index = NameAndTypeIndex}, Data}.
 
-class_pool_item(<<NameIndex:16, _/binary>>) ->
-    {#class_pool_item{name_index = NameIndex}, 3}.
+class_pool_item(<<NameIndex:16, Data/binary>>) ->
+    {#class_pool_item{name_index = NameIndex}, Data}.
 
-name_and_type_pool_item(<<NameIndex:16, DescriptorIndex:16, _/binary>>) ->
-    {#name_and_type_pool_item{name_index = NameIndex, descriptor_index = DescriptorIndex}, 5}.
+name_and_type_pool_item(<<NameIndex:16, DescriptorIndex:16, Data/binary>>) ->
+    {#name_and_type_pool_item{name_index = NameIndex, descriptor_index = DescriptorIndex}, Data}.
 
-utf8_pool_item(<<Length:16, Rest/binary>>) ->
-    {#utf8_pool_item{bytes = binary_part(Rest, 0, Length)}, Length + 3}.
+utf8_pool_item(<<Length:16, Data/binary>>) ->
+    {
+        #utf8_pool_item{bytes = binary_part(Data, 0, Length)},
+        binary_part(Data, Length, byte_size(Data) - Length)
+    }.
