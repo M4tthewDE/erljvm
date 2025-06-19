@@ -18,4 +18,5 @@ parse_system_class(Config) ->
     ?assertEqual(16#CAFEBABE, ClassFile#class_file.magic),
     ?assertEqual(0, ClassFile#class_file.minor_version),
     ?assertEqual(61, ClassFile#class_file.major_version),
-    ?assertEqual(802, length(ClassFile#class_file.constant_pool)).
+    ?assertEqual(802, length(ClassFile#class_file.constant_pool)),
+    ?assertEqual(16#0031, ClassFile#class_file.access_flags).

@@ -5,20 +5,28 @@
 -export([parse/1]).
 
 parse(<<Magic:32, MinorVersion:16, MajorVersion:16, ConstantPoolCount:16, Data/binary>>) ->
-    ConstantPool = constant_pool(ConstantPoolCount, Data),
+    {ConstantPool, RemainingData} = constant_pool(ConstantPoolCount, Data),
+    {AccessFlags, _} = access_flags(RemainingData),
     #class_file{
         magic = Magic,
         minor_version = MinorVersion,
         major_version = MajorVersion,
-        constant_pool = ConstantPool
+        constant_pool = ConstantPool,
+        access_flags = AccessFlags
     }.
 
+access_flags(<<AccessFlags:16, Data/binary>>) ->
+    {AccessFlags, Data}.
+
+constant_pool(Count, Data) ->
+    constant_pool(Count, [], Data).
+
 % constant pool is 1 indexed!
-constant_pool(1, _) ->
-    [];
-constant_pool(Count, Data) when Count > 1 ->
+constant_pool(1, Items, Data) ->
+    {lists:reverse(Items), Data};
+constant_pool(Count, Items, Data) when Count > 1 ->
     {Item, RemainingData} = constant_pool_item(Data),
-    [Item | constant_pool(Count - 1, RemainingData)].
+    constant_pool(Count - 1, [Item | Items], RemainingData).
 
 constant_pool_item(<<Tag:8, Rest/binary>>) ->
     case Tag of
