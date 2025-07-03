@@ -1,22 +1,89 @@
 -module(parser).
--include_lib("eunit/include/eunit.hrl").
 -include("parser.hrl").
 
 -export([parse/1]).
 
 parse(<<Magic:32, MinorVersion:16, MajorVersion:16, ConstantPoolCount:16, Data/binary>>) ->
-    {ConstantPool, RemainingData} = constant_pool(ConstantPoolCount, Data),
-    {AccessFlags, _} = access_flags(RemainingData),
+    {ConstantPool, Data1} = constant_pool(ConstantPoolCount, Data),
+    {AccessFlags, Data2} = access_flags(Data1),
+    {ThisClass, Data3} = this_class(Data2),
+    {SuperClass, Data4} = super_class(Data3),
+    {Interfaces, Data5} = interfaces(Data4),
+    {Fields, _} = fields(ConstantPool, Data5),
+
     #class_file{
         magic = Magic,
         minor_version = MinorVersion,
         major_version = MajorVersion,
         constant_pool = ConstantPool,
-        access_flags = AccessFlags
+        access_flags = AccessFlags,
+        this_class = ThisClass,
+        super_class = SuperClass,
+        interfaces = Interfaces,
+        fields = Fields
     }.
+
+utf8(ConstantPool, Index) ->
+    Item = lists:nth(Index, ConstantPool),
+    Item#utf8_pool_item.bytes.
+
+fields(ConstantPool, <<FieldsCount:16, Data/binary>>) ->
+    fields(ConstantPool, FieldsCount, [], Data).
+
+fields(_, 0, Items, Data) ->
+    {lists:reverse(Items), Data};
+fields(
+    ConstantPool,
+    Count,
+    Items,
+    <<AccessFlags:16, NameIndex:16, DescriptorIndex:16, AttributesCount:16, Data/binary>>
+) ->
+    {Attributes, Data1} = attributes(ConstantPool, AttributesCount, [], Data),
+    Field = #field{
+        access_flags = AccessFlags,
+        name_index = NameIndex,
+        descriptor_index = DescriptorIndex,
+        attributes = Attributes
+    },
+    fields(ConstantPool, Count - 1, [Field | Items], Data1).
+
+attributes(_, 0, Items, Data) ->
+    {lists:reverse(Items), Data};
+attributes(
+    ConstantPool, Count, Attributes, <<AttributeNameIndex:16, _:32, Data/binary>>
+) ->
+    ct:pal("Attributes Count: ~p~n", [Count]),
+    {Attribute, RemainingData} = attribute(utf8(ConstantPool, AttributeNameIndex), Data),
+    ct:pal("Attribute : ~p~n", [Attribute]),
+    attributes(ConstantPool, Count - 1, [Attribute | Attributes], RemainingData).
+
+attribute(Name, Data) ->
+    {Attribute, RemainingData} =
+        case Name of
+            <<"ConstantValue">> -> constant_value(Data);
+            true -> exit(unknown_attribute_name)
+        end,
+    {Attribute, RemainingData}.
+
+constant_value(<<ConstantValueIndex:16, Data/binary>>) ->
+    {#constant_value{constant_value_index = ConstantValueIndex}, Data}.
+
+interfaces(<<InterfacesCount:16, Data/binary>>) ->
+    interfaces(InterfacesCount, [], Data).
+
+interfaces(0, Items, Data) ->
+    {lists:reverse(Items), Data};
+interfaces(Count, Items, <<Index:16, Data/binary>>) ->
+    interfaces(Count - 1, [Index | Items], Data).
 
 access_flags(<<AccessFlags:16, Data/binary>>) ->
     {AccessFlags, Data}.
+
+this_class(<<ThisClass:16, Data/binary>>) ->
+    {ThisClass, Data}.
+
+super_class(<<SuperClass:16, Data/binary>>) ->
+    {SuperClass, Data}.
 
 constant_pool(Count, Data) ->
     constant_pool(Count, [], Data).

@@ -1,4 +1,15 @@
--record(class_file, {magic, minor_version, major_version, constant_pool, access_flags}).
+-record(class_file, {
+    magic,
+    minor_version,
+    major_version,
+    constant_pool,
+    access_flags,
+    this_class,
+    super_class,
+    interfaces,
+    fields
+}).
+-record(field, {access_flags, name_index, descriptor_index, attributes}).
 -record(method_ref_pool_item, {class_index, name_and_type_index}).
 -record(class_pool_item, {name_index}).
 -record(name_and_type_pool_item, {name_index, descriptor_index}).
@@ -10,3 +21,4 @@
 -record(integer_pool_item, {bytes}).
 -record(method_handle_pool_item, {reference_kind, reference_index}).
 -record(method_type_pool_item, {descriptor_index}).
+-record(constant_value, {constant_value_index}).

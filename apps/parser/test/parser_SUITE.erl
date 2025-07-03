@@ -15,8 +15,13 @@ parse_system_class(Config) ->
         end,
 
     ClassFile = parser:parse(Data),
+
     ?assertEqual(16#CAFEBABE, ClassFile#class_file.magic),
     ?assertEqual(0, ClassFile#class_file.minor_version),
     ?assertEqual(61, ClassFile#class_file.major_version),
     ?assertEqual(802, length(ClassFile#class_file.constant_pool)),
-    ?assertEqual(16#0031, ClassFile#class_file.access_flags).
+    ?assertEqual(16#0031, ClassFile#class_file.access_flags),
+    ?assertEqual(8, ClassFile#class_file.this_class),
+    ?assertEqual(2, ClassFile#class_file.super_class),
+    ?assertEqual(0, length(ClassFile#class_file.interfaces)),
+    ?assertEqual(12, length(ClassFile#class_file.fields)).
