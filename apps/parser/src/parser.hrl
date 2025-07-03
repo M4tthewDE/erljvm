@@ -22,3 +22,5 @@
 -record(method_handle_pool_item, {reference_kind, reference_index}).
 -record(method_type_pool_item, {descriptor_index}).
 -record(constant_value, {constant_value_index}).
+-record(runtime_visible_annotations, {annotations}).
+-record(annotation, {type_index, element_value_pairs}).
