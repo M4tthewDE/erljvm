@@ -28,3 +28,4 @@
 -record(method, {access_flags, name_index, descriptor_index, attributes}).
 -record(exception_table_item, {start_pc, end_pc, handler_pc, catch_type}).
 -record(code, {max_stack, max_locals, code, exception_table, attributes}).
+-record(line_number_table_entry, {start_pc, line_number}).

@@ -23,6 +23,7 @@ attribute(ConstantPool, Name, Data) ->
             <<"ConstantValue">> -> constant_value(Data);
             <<"RuntimeVisibleAnnotations">> -> runtime_visible_annotations(Data);
             <<"Code">> -> code(ConstantPool, Data);
+            <<"LineNumberTable">> -> line_number_table(Data);
             true -> exit(unknown_attribute_name)
         end,
     {Attribute, RemainingData}.
@@ -94,3 +95,15 @@ exception_table(
         ],
         RemainingData
     ).
+
+line_number_table(0, Exceptions, Data) ->
+    {lists:reverse(Exceptions), Data};
+line_number_table(Count, LineNumberTable, <<StartPc:16, LineNumber:16, Data/binary>>) ->
+    line_number_table(
+        Count - 1,
+        [#line_number_table_entry{start_pc = StartPc, line_number = LineNumber} | LineNumberTable],
+        Data
+    ).
+
+line_number_table(<<LineNumberTableLength:16, Data/binary>>) ->
+    line_number_table(LineNumberTableLength, [], Data).
