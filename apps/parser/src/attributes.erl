@@ -24,6 +24,7 @@ attribute(ConstantPool, Name, Data) ->
             <<"RuntimeVisibleAnnotations">> -> runtime_visible_annotations(Data);
             <<"Code">> -> code(ConstantPool, Data);
             <<"LineNumberTable">> -> line_number_table(Data);
+            <<"LocalVariableTable">> -> local_variable_table(Data);
             true -> exit(unknown_attribute_name)
         end,
     {Attribute, RemainingData}.
@@ -96,8 +97,8 @@ exception_table(
         RemainingData
     ).
 
-line_number_table(0, Exceptions, Data) ->
-    {lists:reverse(Exceptions), Data};
+line_number_table(0, LineNumberTable, Data) ->
+    {lists:reverse(LineNumberTable), Data};
 line_number_table(Count, LineNumberTable, <<StartPc:16, LineNumber:16, Data/binary>>) ->
     line_number_table(
         Count - 1,
@@ -107,3 +108,28 @@ line_number_table(Count, LineNumberTable, <<StartPc:16, LineNumber:16, Data/bina
 
 line_number_table(<<LineNumberTableLength:16, Data/binary>>) ->
     line_number_table(LineNumberTableLength, [], Data).
+
+local_variable_table(<<LocalVariableTableLength:16, Data/binary>>) ->
+    local_variable_table(LocalVariableTableLength, [], Data).
+
+local_variable_table(0, LocalVariableTable, Data) ->
+    {lists:reverse(LocalVariableTable), Data};
+local_variable_table(
+    Count,
+    LocalVariableTable,
+    <<StartPc:16, Length:16, NameIndex:16, DescriptorIndex:16, Index:16, Data/binary>>
+) ->
+    local_variable_table(
+        Count - 1,
+        [
+            #local_variable_table_entry{
+                start_pc = StartPc,
+                length = Length,
+                name_index = NameIndex,
+                descriptor_index = DescriptorIndex,
+                index = Index
+            }
+            | LocalVariableTable
+        ],
+        Data
+    ).
