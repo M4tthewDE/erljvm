@@ -24,4 +24,5 @@ parse_system_class(Config) ->
     ?assertEqual(8, ClassFile#class_file.this_class),
     ?assertEqual(2, ClassFile#class_file.super_class),
     ?assertEqual(0, length(ClassFile#class_file.interfaces)),
-    ?assertEqual(12, length(ClassFile#class_file.fields)).
+    ?assertEqual(12, length(ClassFile#class_file.fields)),
+    ?assertEqual(48, length(ClassFile#class_file.methods)).

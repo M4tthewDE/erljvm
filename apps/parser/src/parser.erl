@@ -1,6 +1,5 @@
 -module(parser).
 -include("parser.hrl").
-
 -export([parse/1]).
 
 parse(<<Magic:32, MinorVersion:16, MajorVersion:16, ConstantPoolCount:16, Data/binary>>) ->
@@ -9,7 +8,8 @@ parse(<<Magic:32, MinorVersion:16, MajorVersion:16, ConstantPoolCount:16, Data/b
     {ThisClass, Data3} = this_class(Data2),
     {SuperClass, Data4} = super_class(Data3),
     {Interfaces, Data5} = interfaces:interfaces(Data4),
-    {Fields, _} = fields:fields(ConstantPool, Data5),
+    {Fields, Data6} = fields:fields(ConstantPool, Data5),
+    {Methods, _} = methods:methods(ConstantPool, Data6),
 
     #class_file{
         magic = Magic,
@@ -20,7 +20,8 @@ parse(<<Magic:32, MinorVersion:16, MajorVersion:16, ConstantPoolCount:16, Data/b
         this_class = ThisClass,
         super_class = SuperClass,
         interfaces = Interfaces,
-        fields = Fields
+        fields = Fields,
+        methods = Methods
     }.
 
 access_flags(<<AccessFlags:16, Data/binary>>) ->

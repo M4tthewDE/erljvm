@@ -12,9 +12,9 @@ fields(
     ConstantPool,
     Count,
     Items,
-    <<AccessFlags:16, NameIndex:16, DescriptorIndex:16, AttributesCount:16, Data/binary>>
+    <<AccessFlags:16, NameIndex:16, DescriptorIndex:16, Data/binary>>
 ) ->
-    {Attributes, Data1} = attributes:attributes(ConstantPool, AttributesCount, [], Data),
+    {Attributes, Data1} = attributes:attributes(ConstantPool, Data),
     Field = #field{
         access_flags = AccessFlags,
         name_index = NameIndex,

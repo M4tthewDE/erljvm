@@ -7,7 +7,8 @@
     this_class,
     super_class,
     interfaces,
-    fields
+    fields,
+    methods
 }).
 -record(field, {access_flags, name_index, descriptor_index, attributes}).
 -record(method_ref_pool_item, {class_index, name_and_type_index}).
@@ -24,3 +25,6 @@
 -record(constant_value, {constant_value_index}).
 -record(runtime_visible_annotations, {annotations}).
 -record(annotation, {type_index, element_value_pairs}).
+-record(method, {access_flags, name_index, descriptor_index, attributes}).
+-record(exception_table_item, {start_pc, end_pc, handler_pc, catch_type}).
+-record(code, {max_stack, max_locals, code, exception_table, attributes}).

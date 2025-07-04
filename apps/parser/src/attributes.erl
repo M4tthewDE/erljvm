@@ -1,20 +1,28 @@
 -module(attributes).
 -include("parser.hrl").
--export([attributes/4]).
+-export([attributes/2]).
+
+attributes(
+    ConstantPool, <<AttributesCount:16, Data/binary>>
+) ->
+    attributes(ConstantPool, AttributesCount, [], Data).
 
 attributes(_, 0, Items, Data) ->
     {lists:reverse(Items), Data};
 attributes(
     ConstantPool, Count, Attributes, <<AttributeNameIndex:16, _:32, Data/binary>>
 ) ->
-    {Attribute, RemainingData} = attribute(pool:utf8(ConstantPool, AttributeNameIndex), Data),
+    {Attribute, RemainingData} = attribute(
+        ConstantPool, pool:utf8(ConstantPool, AttributeNameIndex), Data
+    ),
     attributes(ConstantPool, Count - 1, [Attribute | Attributes], RemainingData).
 
-attribute(Name, Data) ->
+attribute(ConstantPool, Name, Data) ->
     {Attribute, RemainingData} =
         case Name of
             <<"ConstantValue">> -> constant_value(Data);
             <<"RuntimeVisibleAnnotations">> -> runtime_visible_annotations(Data);
+            <<"Code">> -> code(ConstantPool, Data);
             true -> exit(unknown_attribute_name)
         end,
     {Attribute, RemainingData}.
@@ -46,3 +54,43 @@ element_value_pair(<<_:16, Tag:8, _/binary>>) ->
     case Tag of
         true -> exit(unknown_element_value_tag)
     end.
+
+code(
+    ConstantPool,
+    <<MaxStack:16, MaxLocals:16, CodeLength:32, Data/binary>>
+) ->
+    ct:pal("CodeLength: ~p~n", [CodeLength]),
+    Code = binary_part(Data, 0, CodeLength),
+    {ExceptionTable, RemainingData} = exception_table(
+        binary_part(Data, CodeLength, byte_size(Data) - CodeLength)
+    ),
+    {Attributes, RemainingData1} = attributes(ConstantPool, RemainingData),
+    {
+        #code{
+            max_stack = MaxStack,
+            max_locals = MaxLocals,
+            code = Code,
+            exception_table = ExceptionTable,
+            attributes = Attributes
+        },
+        RemainingData1
+    }.
+
+exception_table(<<ExceptionTableLength:16, Data/binary>>) ->
+    exception_table(ExceptionTableLength, [], Data).
+
+exception_table(0, Exceptions, Data) ->
+    {lists:reverse(Exceptions), Data};
+exception_table(
+    Count, Exceptions, <<StartPc:16, EndPc:16, HandlerPc:16, CatchType:16, RemainingData/binary>>
+) ->
+    exception_table(
+        Count - 1,
+        [
+            #exception_table_item{
+                start_pc = StartPc, end_pc = EndPc, handler_pc = HandlerPc, catch_type = CatchType
+            }
+            | Exceptions
+        ],
+        RemainingData
+    ).
