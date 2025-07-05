@@ -6,12 +6,12 @@
 fields(ConstantPool, <<FieldsCount:16, Data/binary>>) ->
     fields(ConstantPool, FieldsCount, [], Data).
 
-fields(_, 0, Items, Data) ->
-    {lists:reverse(Items), Data};
+fields(_, 0, Fields, Data) ->
+    {lists:reverse(Fields), Data};
 fields(
     ConstantPool,
     Count,
-    Items,
+    Fields,
     <<AccessFlags:16, NameIndex:16, DescriptorIndex:16, Data/binary>>
 ) ->
     {Attributes, Data1} = attributes:attributes(ConstantPool, Data),
@@ -21,4 +21,4 @@ fields(
         descriptor_index = DescriptorIndex,
         attributes = Attributes
     },
-    fields(ConstantPool, Count - 1, [Field | Items], Data1).
+    fields(ConstantPool, Count - 1, [Field | Fields], Data1).

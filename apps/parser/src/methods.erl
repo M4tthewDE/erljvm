@@ -16,12 +16,10 @@ method(
     <<AccessFlags:16, NameIndex:16, DescriptorIndex:16, Data/binary>>
 ) ->
     {Attributes, RemainingData} = attributes:attributes(ConstantPool, Data),
-    {
-        #method{
-            access_flags = AccessFlags,
-            name_index = NameIndex,
-            descriptor_index = DescriptorIndex,
-            attributes = Attributes
-        },
-        RemainingData
-    }.
+    Method = #method{
+        access_flags = AccessFlags,
+        name_index = NameIndex,
+        descriptor_index = DescriptorIndex,
+        attributes = Attributes
+    },
+    {Method, RemainingData}.

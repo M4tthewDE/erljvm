@@ -7,25 +7,25 @@ constant_pool(Count, Data) ->
     constant_pool(Count, [], Data).
 
 % constant pool is 1 indexed!
-constant_pool(1, Items, Data) ->
-    {lists:reverse(Items), Data};
-constant_pool(Count, Items, Data) when Count > 1 ->
+constant_pool(1, Pool, Data) ->
+    {lists:reverse(Pool), Data};
+constant_pool(Count, Pool, Data) when Count > 1 ->
     {Item, RemainingData} = constant_pool_item(Data),
-    constant_pool(Count - 1, [Item | Items], RemainingData).
+    constant_pool(Count - 1, [Item | Pool], RemainingData).
 
-constant_pool_item(<<Tag:8, Rest/binary>>) ->
+constant_pool_item(<<Tag:8, Data/binary>>) ->
     case Tag of
-        1 -> utf8_pool_item(Rest);
-        3 -> integer_pool_item(Rest);
-        7 -> class_pool_item(Rest);
-        8 -> string_pool_item(Rest);
-        9 -> field_ref_pool_item(Rest);
-        10 -> method_ref_pool_item(Rest);
-        11 -> interface_method_ref_pool_item(Rest);
-        12 -> name_and_type_pool_item(Rest);
-        15 -> method_handle_pool_item(Rest);
-        16 -> method_type_pool_item(Rest);
-        18 -> invoke_dynamic_pool_item(Rest);
+        1 -> utf8_pool_item(Data);
+        3 -> integer_pool_item(Data);
+        7 -> class_pool_item(Data);
+        8 -> string_pool_item(Data);
+        9 -> field_ref_pool_item(Data);
+        10 -> method_ref_pool_item(Data);
+        11 -> interface_method_ref_pool_item(Data);
+        12 -> name_and_type_pool_item(Data);
+        15 -> method_handle_pool_item(Data);
+        16 -> method_type_pool_item(Data);
+        18 -> invoke_dynamic_pool_item(Data);
         true -> exit(unknown_constantpool_tag)
     end.
 
